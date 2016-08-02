@@ -19,7 +19,7 @@ A simple frogger-style clone in JS.
     * Right arrow key - move right
     * Up arrow key - move up
     * Down arrow key - move down
-* The game is one when you reach the water, and you will be respawned at the start.
+* The game is won when you reach the water, and you will be respawned at the start.
 * If you collide with a bug, you lose, and will be respawned at the start.
 
 ## About the code
