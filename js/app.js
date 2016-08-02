@@ -61,11 +61,11 @@ Sprite.prototype.shiftRow = function(deltaR) {
 // Fences in the sprite. It is up to the child sprite to obey the bounds set here.
 // Bounds are set as min, max pair arrays of [colMin, colMax], [rowMin, rowMax]
 Sprite.prototype.setBounds = function(colBounds, rowBounds) {
-    if (colBounds != undefined) {
+    if (colBounds !== undefined) {
         this.xBounds = [colsToPx(colBounds[0]), colsToPx(colBounds[1])];
     }
     // It's not necessary to set a row boundary for the enemy child sprite, so this parameter is optional.
-    if (rowBounds != undefined) {
+    if (rowBounds !== undefined) {
         this.yBounds = [rowsToPx(rowBounds[0]), rowsToPx(rowBounds[1])];
     }
 };
@@ -158,7 +158,7 @@ Player.prototype.handleInput = function (keyCode) {
             console.log(this.row());
             console.log(this.minRow());
             console.log(this.row() > this.minRow());
-            if (this.row() == 0) {
+            if (this.row() === 0) {
                 this.respawn();
             } else {
                 if (this.row() > this.minRow()) {
@@ -179,16 +179,12 @@ Player.prototype.handleInput = function (keyCode) {
 // Checks to see if the player is in a collision state with any of the enemies and respawns
 // the player - a loss - if they have collided.
 Player.prototype.update = function () {
-    var needsRespawn = false;
     allEnemies.forEach(function (enemy) {
-        if (player.hasCollided(enemy)) {
+        if (this.hasCollided(enemy)) {
             console.log("collided");
-            needsRespawn = true;
+            this.respawn();
         }
-    });
-    if (needsRespawn) {
-        this.respawn();
-    }
+    }, this);
 };
 
 
