@@ -5,8 +5,9 @@ A simple frogger-style clone in JS.
 ## Setup
 ### Method 1 - Easy
 * Go to https://rbtr.github.io/classic-arcade-game-fend/index.html
-* Play the game!
-### Method 2
+* Play the game!  
+
+### Method 2 
 * Download the repository here or clone using git 
 * Unzip the repo zipfile
 * Load index.html in your browser
