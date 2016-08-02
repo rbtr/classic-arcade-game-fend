@@ -94,7 +94,7 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
         });
-        player.update(dt);
+        player.update();
     }
 
     /* This function initially draws the "game level", it will then call
@@ -132,7 +132,7 @@ var Engine = (function(global) {
                  * so that we get the benefits of caching these images, since
                  * we're using them over and over.
                  */
-                ctx.drawImage(Resources.get(rowImages[row]), colsToPx(col), rowsToPx(row));
+                ctx.drawImage(Resources.get(rowImages[row]), col * 101, row * 83);
             }
         }
 
@@ -159,7 +159,10 @@ var Engine = (function(global) {
      * those sorts of things. It's only called once by the init() method.
      */
     function reset() {
-        // noop
+        player.respawn();
+        allEnemies.forEach(function(enemy) {
+            enemy.respawn();
+        })
     }
 
     /* Go ahead and load all of the images we know we're going to need to
