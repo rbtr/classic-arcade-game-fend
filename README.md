@@ -1,6 +1,26 @@
-frontend-nanodegree-arcade-game
+classic-arcade-game-fend
 ===============================
 
-Students should use this [rubric](https://review.udacity.com/#!/projects/2696458597/rubric) for self-checking their submission. Make sure the functions you write are **object-oriented** - either class functions (like Player and Enemy) or class prototype functions such as Enemy.prototype.checkCollisions, and that the keyword 'this' is used appropriately within your class and class prototype functions to refer to the object the function is called upon. Also be sure that the **readme.md** file is updated with your instructions on both how to 1. Run and 2. Play your arcade game.
+## Setup
+### Method 1 - Easy
+* Go to https://rbtr.github.io/classic-arcade-game-fend/index.html
+* Play the game!
+### Method 2
+* Download the repository here
+* Unzip the repo zipfile
+* Load index.html in your browser
+* Play the game!
 
-For detailed instructions on how to get started, check out this [guide](https://docs.google.com/document/d/1v01aScPjSWCCWQLIpFqvg3-vXLH2e8_SZQKC8jNO0Dc/pub?embedded=true).
+## How to play
+* Controls are: 
+    * Left arrow key - move left
+    * Right arrow key - move right
+    * Up arrow key - move up
+    * Down arrow key - move down
+* The game is one when you reach the water, and you will be respawned at the start.
+* If you collide with a bug, you lose, and will be respawned at the start.
+
+## About the code
+One different thing that happens in my code is that I wrote some helper functions to map pixel coordinates to rows and columns.
+You will see this as pxToRow/rowToPx and the col equivalent.
+Wherever possible, the Sprite object only exposes public methods that deal in blocks instead of pixels which simplifies moving the Sprites around.

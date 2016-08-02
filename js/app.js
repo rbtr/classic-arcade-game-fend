@@ -1,252 +1,217 @@
-// Dimensional constants to scale the movements in X and Y
-const colSize = 101;
-const rowSize = 83;
-const rowOffset = -35;
-
-var rowsToPx = function(rows) {
-    return rowSize * rows;
+// A parent Sprite object
+// This object is the base for both the enemy and the player sprites
+// It has an x and y coordinate and a sprite image field
+var Sprite = function(spriteImg) {
+    this.x = 0;
+    this.y = 0;
+    this.sprite = spriteImg;
 };
 
-var colsToPx = function(cols) {
-    return colSize * cols;
+// Return the current column of the sprite (from its X coordinate)
+Sprite.prototype.col = function() {
+    return pxToCols(this.x);
 };
 
-/*
-    Base Movable
- */
+// Return the current row of the sprite (from its Y coordinate)
+Sprite.prototype.row = function() {
+    return pxToRows(this.y);
+};
 
-// / Parent base class for the Enemy and Player sprites to inherit
-// (I refactored those child class according to DRY)
-var Movable = function(sprite_image_path, col, row, bounds) {
-    this.sprite = sprite_image_path;
+// Return the lower column boundary of the sprite
+Sprite.prototype.minCol = function() {
+    return pxToCols(this.xBounds[0]);
+};
+
+// Return the upper column boundary of the sprite
+Sprite.prototype.maxCol = function() {
+    return pxToCols(this.maxX());
+};
+
+// Return the upper pixel boundary of the sprite (supplements the maxCol method)
+Sprite.prototype.maxX = function() {
+    return this.xBounds[1];
+};
+
+// Return the lower row boundary of the sprite
+Sprite.prototype.minRow = function() {
+    return pxToRows(this.yBounds[0]);
+};
+
+// Return the upper row boundary of the sprite
+Sprite.prototype.maxRow = function() {
+    return pxToRows(this.yBounds[1]);
+};
+
+// Jumps the sprite to the x, y coordinates of the passed row and column
+Sprite.prototype.moveTo = function(col, row) {
     this.x = colsToPx(col);
     this.y = rowsToPx(row) + rowOffset;
-    this.moving = undefined;
-    this.movement = [];
-    this.bounds = bounds;
 };
 
-// Draw the Movable sprite on the screen at its current position
-Movable.prototype.render = function() {
+// Shifts the x coordinate of the sprite by the pixel equivalent of the passed column delta
+Sprite.prototype.shiftCol = function(deltaC) {
+    this.x += colsToPx(deltaC);
+};
+
+// Shifts the y coordinate of the sprite by the pixel equivalent of the passed row delta
+Sprite.prototype.shiftRow = function(deltaR) {
+    this.y += rowsToPx(deltaR);
+};
+
+// Fences in the sprite. It is up to the child sprite to obey the bounds set here.
+// Bounds are set as min, max pair arrays of [colMin, colMax], [rowMin, rowMax]
+Sprite.prototype.setBounds = function(colBounds, rowBounds) {
+    if (colBounds != undefined) {
+        this.xBounds = [colsToPx(colBounds[0]), colsToPx(colBounds[1])];
+    }
+    // It's not necessary to set a row boundary for the enemy child sprite, so this parameter is optional.
+    if (rowBounds != undefined) {
+        this.yBounds = [rowsToPx(rowBounds[0]), rowsToPx(rowBounds[1])];
+    }
+};
+
+// Comparator method that checks whether this sprite is within a collision range of the passed otherSprite.
+// A collision state is currently half the distance between blocks in either ordinate.
+Sprite.prototype.hasCollided = function(otherSprite) {
+    var xCollided = Math.abs(this.x - otherSprite.x) < colSize / 2;
+    var yCollided = Math.abs(this.y - otherSprite.y) < rowSize / 2;
+    return xCollided && yCollided;
+};
+
+// Draws this sprite
+Sprite.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
-// Move methods to handle moving the Movable sprite in X and Y
-Movable.prototype.translateCols = function(cols) {
-    this.translateX(colsToPx(cols));
-};
-
-Movable.prototype.translateRows = function(rows) {
-    this.translateY(rowsToPx(rows));
-};
-
-Movable.prototype.translateX = function(xPx) {
-    this.x += xPx;
-};
-
-Movable.prototype.translateY = function(yPx) {
-    this.y += yPx;
-};
-
-Movable.prototype.queueMovement = function(movement) {
-    if (this.movement.length > 0) {
-        this.movement.pop();
-    }
-
-    if (this.bounds.isLegal(this, movement)) {
-        this.movement.push(movement);
-    }
-};
-
-// Update the Enemy's position, required method for game
-// Parameter: dt, a time delta between ticks
-Movable.prototype.update = function(dt) {
-    // You should multiply any movement by the dt parameter
-    // which will ensure the game runs at the same speed for
-    // all computers.
-    if (this.moving == undefined) {
-        if (this.movement.length > 0) {
-            this.moving = this.movement.shift();
-        }
-    }
-    if (this.moving != undefined) {
-        if (this.moving.sX == 0 && this.moving.sY == 0) {
-            this.moving = undefined;
-            return;
-        }
-        this.translateX(this.moving.dX(dt));
-        this.translateY(this.moving.dY(dt));
-    }
-};
-
-// This object takes an absolute speed (as a positive value) in X and Y and
-// a total movement distance (as a positive value) in X and Y.
-// It also takes a direction parameter which indicates the direction of movement
-// since the speed and movement scalar are directionless.
-// For the direction, +X is right, +Y is down
-var Movement = function(sX, sY, directionX, directionY, x, y) {
-    this.sX = sX;
-    this.sY = sY;
-    this.dirX = directionX > 0 ? 1 : -1;
-    this.dirY = directionY > 0 ? 1 : -1;
-    this.x = x;
-    this.y = y;
-};
-
-Movement.prototype.d = function(dt, s, q, dir) {
-    var d = s * dt;
-
-    if (q != undefined) {
-        if (d > q && q > 0) {
-            d = q;
-        }
-    }
-
-    return d;
-};
-
-Movement.prototype.dX = function(dt) {
-    var dx = this.d(dt, this.sX, this.x);
-
-    if (this.x != undefined) {
-        if (this.x <= 0) {
-            this.x = 0;
-            this.sX = 0;
-            dx = 0;
-        } else {
-            this.x -= dx;
-        }
-    }
-    return this.dirX * dx;
-};
-
-Movement.prototype.dY = function(dt) {
-    var dy = this.d(dt, this.sY, this.y);
-
-    if (this.y != undefined) {
-        if (this.y <= 0) {
-            this.y = 0;
-            this.sY = 0;
-            dy = 0;
-        } else {
-            this.y -= dy;
-        }
-    }
-    return this.dirY * dy;
-};
-
-// Defines a bounding rect out of which the sprite is not allowed to move.
-var Bounds = function(lX, lY, uX, uY) {
-    this.lX = lX - 1;
-    this.lY = lY + rowOffset - 1;
-    this.uX = uX + 1;
-    this.uY = uY + rowOffset + 1;
-};
-
-Bounds.prototype.isLegal = function(movable, movement) {
-    var legal = true;
-    var dx = movement.x == undefined ? colSize : movement.x;
-    var dy = movement.y == undefined ? rowSize : movement.y;
-
-    if (movement.dirX > 0) {
-        if (movable.x + dx > this.uX) {
-            legal = false;
-        }
-    } else {
-        if (movable.x - dx < this.lX) {
-            legal = false;
-        }
-    }
-
-    if (movement.dirY > 0) {
-        if (movable.y + dy > this.uY) {
-            legal = false;
-        }
-    } else {
-        if (movable.y - dy < this.lY) {
-            legal = false;
-        }
-    }
-    return legal;
-};
-
-
-/*
-    Enemy subclass
- */
 
 // Enemies our player must avoid
-var Enemy = function(x, y) {
-    // Variables applied to each of our instances go here,
-    // we've provided one for you to get started
-
+var Enemy = function() {
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
     const sprite_path = "images/enemy-bug.png";
-    Movable.call(this, sprite_path, x, y, new Bounds(colsToPx(-1), rowsToPx(-1), colsToPx(6), rowsToPx(7)));
+    Sprite.call(this, sprite_path);
+    this.setBounds([-1, 5]);
 };
 
-Enemy.prototype = Object.create(Movable.prototype);
+Enemy.prototype = Object.create(Sprite.prototype);
 Enemy.prototype.constructor = Enemy;
 
-Enemy.prototype.spawnNew = function() {
-    var enemy = new Enemy(-1, Math.floor((Math.random() * 3)) + 1);
-    var sX = colsToPx(Math.floor(Math.random() * 6) / 2 + 1);
-    enemy.queueMovement(new Movement(sX, 0, 1, 0));
-    return enemy;
+// This respawn method initializes (or reinitializes) this sprite to some default condition
+// In this case, it sets a new random location and random speed for the Enemy.
+Enemy.prototype.respawn = function () {
+    this.speed = colsToPx(Math.random() * 2 + 1); // Random speed between 1 and 3 cols/second
+    this.moveTo(-1, Math.floor(Math.random() * 3) + 1);
 };
 
-/*
-    Player subclass
- */
+// Updates the internal state of the Enemy
+// The enemies are always moving, so multiplying the speed by the time delta gives us a constant
+// movement regardless of the framerate of the player's game.
+// This method always checks to see if the Enemy is out of its bounds, and respawns if it is.
+Enemy.prototype.update = function(dt) {
+    var delta_x = this.speed * dt;
+    if (this.x + delta_x > this.maxX()) {
+        this.respawn();
+    } else {
+        this.x += delta_x;
+    }
+};
 
-// Now write your own player class
-// This class requires an update(), render() and
-// a handleInput() method.
-var Player = function (x, y) {
+
+//
+//
+
+
+// Player class
+var Player = function () {
     const sprite_path = "images/char-boy.png";
-    Movable.call(this, sprite_path, x, y, new Bounds(0, rowsToPx(1), colsToPx(4), rowsToPx(5)));
+    Sprite.call(this, sprite_path);
+    this.setBounds([0, 4], [0, 4]);
 };
 
-Player.prototype = Object.create(Movable.prototype);
+Player.prototype = Object.create(Sprite.prototype);
 Player.prototype.constructor = Player;
 
+// This respawn method resets the player to their origin for another go!
+Player.prototype.respawn = function() {
+    this.moveTo(2, 5);
+};
+
+// Handles input to the game.
+// Acceptable inputs are up, down, left, and right, and the sprite checks to see
+// if it has room to move in that direction without going out of bounds then
+// executes the movement.
+// Finally, it also checks to see if the movement would be in to the water - a win -
+// and resets the player instead of letting them get wet.
 Player.prototype.handleInput = function (keyCode) {
     switch (keyCode) {
         case "left":
-            this.queueMovement(new Movement(colsToPx(2), 0, -1, 0, colsToPx(1), 0));
+            if (this.col() > this.minCol()) {
+                this.shiftCol(-1);
+            }
             break;
         case "right":
-            this.queueMovement(new Movement(colsToPx(2), 0, 1, 0, colsToPx(1), 0));
+            if (this.col() < this.maxCol()) {
+                this.shiftCol(1);
+            }
             break;
         case "up":
-            this.queueMovement(new Movement(0, rowsToPx(2), 0, -1, 0, rowsToPx(1)));
+            console.log(this.row());
+            console.log(this.minRow());
+            console.log(this.row() > this.minRow());
+            if (this.row() == 0) {
+                this.respawn();
+            } else {
+                if (this.row() > this.minRow()) {
+                    console.log("shifting");
+                    this.shiftRow(-1);
+                }
+            }
             break;
         case "down":
-            this.queueMovement(new Movement(0, rowsToPx(2), 0, 1, 0, rowsToPx(1)));
+            if (this.row() < this.maxRow()) {
+                this.shiftRow(1);
+            }
             break;
     }
 };
+
+// Updates the internal state of the player object.
+// Checks to see if the player is in a collision state with any of the enemies and respawns
+// the player - a loss - if they have collided.
+Player.prototype.update = function () {
+    var needsRespawn = false;
+    allEnemies.forEach(function (enemy) {
+        if (player.hasCollided(enemy)) {
+            console.log("collided");
+            needsRespawn = true;
+        }
+    });
+    if (needsRespawn) {
+        this.respawn();
+    }
+};
+
 
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
-var player = new Player(2, 5);
-var allEnemies = [
-    Enemy.prototype.spawnNew(),
-    Enemy.prototype.spawnNew(),
-    Enemy.prototype.spawnNew()
-];
+allEnemies = [new Enemy(), new Enemy(), new Enemy()];
+allEnemies.forEach(function (enemy) {
+    enemy.respawn();
+});
+
+player = new Player();
+player.respawn();
 
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
-document.addEventListener("keyup", function(e) {
+document.addEventListener('keyup', function(e) {
     var allowedKeys = {
-        37: "left",
-        38: "up",
-        39: "right",
-        40: "down"
+        37: 'left',
+        38: 'up',
+        39: 'right',
+        40: 'down'
     };
 
     player.handleInput(allowedKeys[e.keyCode]);
