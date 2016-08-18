@@ -105,8 +105,11 @@ Enemy.prototype.constructor = Enemy;
 // This respawn method initializes (or reinitializes) this sprite to some default condition
 // In this case, it sets a new random location and random speed for the Enemy.
 Enemy.prototype.respawn = function () {
-    this.speed = colsToPx(Math.random() * 2 + 1); // Random speed between 1 and 3 cols/second
-    this.moveTo(-1, Math.floor(Math.random() * 3) + 1);
+    var scoreMultiplier = 0.5 * Math.pow( 2, score / 2 );
+    this.speed = colsToPx( scoreMultiplier * Math.random() * 2 + 1 ); // Random speed between 1 and 3 cols/second and
+                                                                      // increasing with score
+    // score
+    this.moveTo( -1, Math.floor( Math.random() * 3 ) + 1 );
 };
 
 // Updates the internal state of the Enemy
