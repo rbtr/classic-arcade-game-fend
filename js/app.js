@@ -1,3 +1,9 @@
+var score = 0;
+function setScore( s ) {
+    score = s;
+    updateScore( score );
+}
+
 // A parent Sprite object
 // This object is the base for both the enemy and the player sprites
 // It has an x and y coordinate and a sprite image field
@@ -159,6 +165,7 @@ Player.prototype.handleInput = function (keyCode) {
             console.log(this.minRow());
             console.log(this.row() > this.minRow());
             if (this.row() === 0) {
+                setScore(score+1);
                 this.respawn();
             } else {
                 if (this.row() > this.minRow()) {
@@ -182,6 +189,7 @@ Player.prototype.update = function () {
     allEnemies.forEach(function (enemy) {
         if (this.hasCollided(enemy)) {
             console.log("collided");
+            setScore(0);
             this.respawn();
         }
     }, this);

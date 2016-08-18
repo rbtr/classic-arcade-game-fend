@@ -23,11 +23,13 @@ var Engine = (function(global) {
         win = global.window,
         canvas = doc.createElement('canvas'),
         ctx = canvas.getContext('2d'),
-        lastTime;
+        lastTime,
+        score = doc.createElement('h1');
 
     canvas.width = 505;
     canvas.height = 606;
     doc.body.appendChild(canvas);
+    doc.body.appendChild(score);
 
     /* This function serves as the kickoff point for the game loop itself
      * and handles properly calling the update and render methods.
@@ -165,6 +167,13 @@ var Engine = (function(global) {
         })
     }
 
+    /* Score updating function that updates the DOM
+     */
+    global.updateScore = function (newScore) {
+        score.innerHTML = "" + newScore;
+        console.log("score: " + newScore);
+    };
+
     /* Go ahead and load all of the images we know we're going to need to
      * draw our game level. Then set init as the callback method, so that when
      * all of these images are properly loaded our game will start.
@@ -183,4 +192,6 @@ var Engine = (function(global) {
      * from within their app.js files.
      */
     global.ctx = ctx;
+
+
 })(this);
