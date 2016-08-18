@@ -1,12 +1,14 @@
 classic-arcade-game-fend
 ===============================
+A simple frogger-style clone in JS.
 
 ## Setup
 ### Method 1 - Easy
 * Go to https://rbtr.github.io/classic-arcade-game-fend/index.html
-* Play the game!
-### Method 2
-* Download the repository here
+* Play the game!  
+
+### Method 2 
+* Download the repository here or clone using git 
 * Unzip the repo zipfile
 * Load index.html in your browser
 * Play the game!
@@ -17,7 +19,7 @@ classic-arcade-game-fend
     * Right arrow key - move right
     * Up arrow key - move up
     * Down arrow key - move down
-* The game is one when you reach the water, and you will be respawned at the start.
+* The game is won when you reach the water, and you will be respawned at the start.
 * If you collide with a bug, you lose, and will be respawned at the start.
 
 ## About the code
